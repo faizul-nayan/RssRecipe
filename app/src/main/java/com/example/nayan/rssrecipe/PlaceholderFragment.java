@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -50,6 +51,7 @@ public class PlaceholderFragment extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
     private List<RssFeedModel> mFeedModelList;
     int value ;
+    private static View view;
 
     public PlaceholderFragment() {
     }
@@ -129,11 +131,32 @@ public class PlaceholderFragment extends Fragment {
             }
         }));
 
+        view = rootView;
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        boolean network = isNetworkConnected();
+
+        if(network){
+            new FetchFeedTask().execute((Void) null);
+        }
+        else{
+            Toast.makeText(getActivity(), "Not connected", Toast.LENGTH_LONG).show();
+        }
+
     }
 
     public void startASycnc() {
         new FetchFeedTask().execute();
+    }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
     }
 
     public class FetchFeedTask extends AsyncTask<Void, Void, Boolean> {
@@ -152,6 +175,9 @@ public class PlaceholderFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
+
+            if(swipeRefreshLayout == null)
+                swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
             swipeRefreshLayout.setRefreshing(true);
 
             if(getArguments().getInt(ARG_SECTION_NUMBER) == 1){ urlLink = urlLinkAll;}
@@ -218,7 +244,11 @@ public class PlaceholderFragment extends Fragment {
                     int eventType = xmlPullParser.getEventType();
 
                     String name = xmlPullParser.getName();
-                    if(name == null)
+                    if(name == null || name.equalsIgnoreCase("channel") || name.equalsIgnoreCase("link")||
+                            name.equalsIgnoreCase("language") || name.equalsIgnoreCase("source")||
+                            name.equalsIgnoreCase("dc:creator") || name.equalsIgnoreCase("category")
+                            || name.equalsIgnoreCase("votes") || name.equalsIgnoreCase("upvotes")
+                            || name.equalsIgnoreCase("downvotes") || name.equalsIgnoreCase("guid") || name.equalsIgnoreCase("guid"))
                         continue;
 
                     if(eventType == XmlPullParser.END_TAG) {
@@ -232,6 +262,21 @@ public class PlaceholderFragment extends Fragment {
                         if(name.equalsIgnoreCase("item")) {
                             isItem = true;
                             continue;
+                        }
+                    }
+
+
+                    if(name.equalsIgnoreCase("media:content")){
+                        imageUrl = xmlPullParser.getAttributeValue(null, "url");
+                        //realUrl = result;
+                        Log.d("Real Url is:", "+++++++++ "+imageUrl );
+                        try {
+                            InputStream in = new java.net.URL(imageUrl).openStream();
+                            mIcon11 = BitmapFactory.decodeStream(in);
+                            in.close();
+                        } catch (Exception e) {
+                            Log.e("Error", e.getMessage());
+                            e.printStackTrace();
                         }
                     }
 
@@ -249,7 +294,7 @@ public class PlaceholderFragment extends Fragment {
                     } else if (name.equalsIgnoreCase("description")) {
                         description = result;
 
-                        imageUrl = description.substring(description.indexOf("src=")+5,description.indexOf("jpg")+5);
+                       /* imageUrl = description.substring(description.indexOf("src=")+5,description.indexOf("jpg")+5);
                         //imageUrl = imageUrl.substring(0,imageUrl.length()+3);
                         imageUrl = imageUrl.replace("'/","");
                         Log.d("MyXmlParser", "Image Url ==> " +imageUrl);
@@ -257,10 +302,11 @@ public class PlaceholderFragment extends Fragment {
                         try {
                             InputStream in = new java.net.URL(imageUrl).openStream();
                             mIcon11 = BitmapFactory.decodeStream(in);
+                            in.close();
                         } catch (Exception e) {
                             Log.e("Error", e.getMessage());
                             e.printStackTrace();
-                        }
+                        }*/
 
                     }
 
