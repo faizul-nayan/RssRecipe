@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
+import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -29,12 +30,17 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static android.content.ContentValues.TAG;
 import static android.support.design.R.attr.layoutManager;
@@ -43,15 +49,19 @@ import static android.support.design.R.attr.layoutManager;
  * Created by Nayan on 6/9/2017.
  */
 
-public class PlaceholderFragment extends Fragment {
+public class PlaceholderFragment extends Fragment implements UserInterface {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private List<RssFeedModel> mFeedModelList;
+    public List<RssFeedModel> mFeedModelList;
     int value ;
     private static View view;
+    ContactManager contactManager;
+    public static List<RssFeedModel> dataList;
+
+    private static boolean flag = false;
 
     public PlaceholderFragment() {
     }
@@ -131,26 +141,71 @@ public class PlaceholderFragment extends Fragment {
             }
         }));
 
+        try {
+            contactManager = new ContactManager(getActivity());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        flag = true;
+        dataList = new ArrayList<>();
         view = rootView;
+
         return rootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        boolean network = isNetworkConnected();
 
-        if(network){
+        boolean network = isNetworkConnected();
+        if (network)
             new FetchFeedTask().execute((Void) null);
-        }
         else{
-            Toast.makeText(getActivity(), "Not connected", Toast.LENGTH_LONG).show();
+            if (getArguments().getInt(ARG_SECTION_NUMBER) == 1) {
+                recyclerView.setAdapter(new RssFeedListAdapter(contactManager.getRecyclerViewData(AllITEM)));
+            } else if (getArguments().getInt(ARG_SECTION_NUMBER) == 2) {
+                recyclerView.setAdapter(new RssFeedListAdapter(contactManager.getRecyclerViewData(SUPE)));
+            } else if (getArguments().getInt(ARG_SECTION_NUMBER) == 3) {
+                recyclerView.setAdapter(new RssFeedListAdapter(contactManager.getRecyclerViewData(MEAT)));
+            } else if (getArguments().getInt(ARG_SECTION_NUMBER) == 4) {
+                recyclerView.setAdapter(new RssFeedListAdapter(contactManager.getRecyclerViewData(SWEET)));
+            } else if (getArguments().getInt(ARG_SECTION_NUMBER) == 5) {
+                recyclerView.setAdapter(new RssFeedListAdapter(contactManager.getRecyclerViewData(VORTA)));
+            } else if (getArguments().getInt(ARG_SECTION_NUMBER) == 6) {
+                recyclerView.setAdapter(new RssFeedListAdapter(contactManager.getRecyclerViewData(ACHAR)));
+            } else if (getArguments().getInt(ARG_SECTION_NUMBER) == 7) {
+                recyclerView.setAdapter(new RssFeedListAdapter(contactManager.getRecyclerViewData(CAKE)));
+            } else if (getArguments().getInt(ARG_SECTION_NUMBER) == 8) {
+                recyclerView.setAdapter(new RssFeedListAdapter(contactManager.getRecyclerViewData(SALAD)));
+            }
+
         }
 
     }
 
     public void startASycnc() {
-        new FetchFeedTask().execute();
+        try {
+            boolean temp = new FetchFeedTask().execute().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void updateDataBase() {
+        /*boolean delete = contactManager.deleteData(AllITEM);
+         if(delete)
+            Log.d("DataBase Delete:", "Successful " );
+        else
+            Log.d("DataBase Delete", "Unuccessful " );*/
+        boolean result = contactManager.addNewItem(mFeedModelList, AllITEM);
+        if (result) {
+            Toast.makeText(getActivity(), "Database Insert success", Toast.LENGTH_LONG).show();
+            Log.d("DataBase insert:", "Successful ");
+        } else
+            Toast.makeText(getActivity(), "Database Insert FAILED", Toast.LENGTH_LONG).show();
     }
 
     private boolean isNetworkConnected() {
@@ -179,6 +234,7 @@ public class PlaceholderFragment extends Fragment {
             if(swipeRefreshLayout == null)
                 swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
             swipeRefreshLayout.setRefreshing(true);
+            flag = true;
 
             if(getArguments().getInt(ARG_SECTION_NUMBER) == 1){ urlLink = urlLinkAll;}
             else if(getArguments().getInt(ARG_SECTION_NUMBER) == 2){urlLink = urlLinkSupe;}
@@ -200,8 +256,11 @@ public class PlaceholderFragment extends Fragment {
                     urlLink = "http://" + urlLink;
 
                 URL url = new URL(urlLink);
-                InputStream inputStream = url.openConnection().getInputStream();
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                InputStream inputStream = connection.getInputStream(); //url.openConnection().getInputStream();
                 mFeedModelList = parseFeed(inputStream);
+                inputStream.close();
+                //dataList = mFeedModelList;
                 return true;
             } catch (IOException e) {
                 Log.e(TAG, "Error", e);
@@ -217,12 +276,16 @@ public class PlaceholderFragment extends Fragment {
             swipeRefreshLayout.setRefreshing(false);
 
             if (success) {
+                if (recyclerView != null && mFeedModelList.size() > 0)
                 recyclerView.setAdapter(new RssFeedListAdapter(mFeedModelList));
+                else
+                    recyclerView.setAdapter(new RssFeedListAdapter(contactManager.getRecyclerViewData(AllITEM)));
+                //updateDataBase();
+
             } else{}
 
                 //recyclerView.setAdapter(new RssFeedListAdapter(mFeedModelList));
         }
-
 
         public List<RssFeedModel> parseFeed(InputStream inputStream) throws XmlPullParserException,
                 IOException {
@@ -293,21 +356,6 @@ public class PlaceholderFragment extends Fragment {
                         pubDate = result;
                     } else if (name.equalsIgnoreCase("description")) {
                         description = result;
-
-                       /* imageUrl = description.substring(description.indexOf("src=")+5,description.indexOf("jpg")+5);
-                        //imageUrl = imageUrl.substring(0,imageUrl.length()+3);
-                        imageUrl = imageUrl.replace("'/","");
-                        Log.d("MyXmlParser", "Image Url ==> " +imageUrl);
-
-                        try {
-                            InputStream in = new java.net.URL(imageUrl).openStream();
-                            mIcon11 = BitmapFactory.decodeStream(in);
-                            in.close();
-                        } catch (Exception e) {
-                            Log.e("Error", e.getMessage());
-                            e.printStackTrace();
-                        }*/
-
                     }
 
 
@@ -316,12 +364,6 @@ public class PlaceholderFragment extends Fragment {
                             RssFeedModel item = new RssFeedModel(title, pubDate, description, mIcon11);
                             items.add(item);
                         }
-                        else {
-                        /*mFeedTitle = title;
-                        mFeedLink = link;
-                        mFeedDescription = description;*/
-                        }
-
                         title = null;
                         pubDate = null;
                         description = null;

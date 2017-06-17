@@ -15,50 +15,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class DataBaseHelper extends SQLiteOpenHelper {
-
-    private static final String DATABASE_NAME = "libraryManagementDataBase.db";
-    private static final int DATABASE_VERSION = 1;
-    public static final String DB_PATH = "/data/data/librarymanagement.we.a4bit.com.libarymanagmentsystem/databases/";
-
-    public static final String USER_ID = "id";
-    public static final String FULL_NAME = "fullName";
-    public static final String PHONE_NO = "phone";
-    public static final String USER_NAME = "username";
-    public static final String PASSWORD = "password";
-    public static final String STD_ID = "stdId";
-    public static final String TABLE_USERINFO = "user_info";
-
-    public static final String TABLE_BOOKLIST = "book_list";
-    public static final String BOOK_ID = "book_id";
-    public static final String BOOK_NAME = "book_name";
-    public static final String BOOK_AUTHOR = "book_author";
-    public static final String BOOK_DISCRIPTION = "book_discripation";
-
-    public static final String TABLE_BORROWBOOK = "borrow_book";
-    public static final String BORROW_ID = "borrow_id";
-    public static final String BORROW_DATE = "borrow_date";
-    public static final String BORROW_RETURN_DATE = "return_date";
-    public static final String BORROW_STATUS = "borrow_status";
-
+public class DataBaseHelper extends SQLiteOpenHelper implements UserInterface {
 
     private Context context;
 
 
-    public DataBaseHelper(Context context) {
+    public DataBaseHelper(Context context) throws IOException {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
+        createDataBase();
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        //sqLiteDatabase.execSQL(CREATE_USERINFO_TABLE);
-        sqLiteDatabase.execSQL("CREATE TABLE '"+TABLE_USERINFO+"' ('"+USER_ID+"' integer PRIMARY KEY AUTOINCREMENT,'"+FULL_NAME+"' text NOT NULL,'"+PHONE_NO+"' text NOT NULL,'"+USER_NAME+"' text NOT NULL,'"+PASSWORD+"' text NOT NULL);");
-        Toast.makeText(context, "Table "+TABLE_USERINFO+" Create",Toast.LENGTH_LONG).show();
-        sqLiteDatabase.execSQL("CREATE TABLE '"+TABLE_BOOKLIST+"' ('"+BOOK_ID+"' integer PRIMARY KEY AUTOINCREMENT,'"+BOOK_NAME+"' text NOT NULL,'"+BOOK_AUTHOR+"' text NOT NULL,'"+BOOK_DISCRIPTION+"' text NOT NULL);");
-        Toast.makeText(context, "Table "+TABLE_BOOKLIST+" Create",Toast.LENGTH_LONG).show();
-        sqLiteDatabase.execSQL("CREATE TABLE '"+TABLE_BORROWBOOK+"' ('"+BORROW_ID+"' integer PRIMARY KEY AUTOINCREMENT,'"+USER_ID+"' integer NOT NULL,'"+BOOK_ID+"' integer NOT NULL,'"+BORROW_DATE+"' text NOT NULL,'"+BORROW_RETURN_DATE+"' text NOT NULL,'"+BORROW_STATUS+"' text NOT NULL,FOREIGN KEY('"+USER_ID+"') REFERENCES '"+TABLE_USERINFO+"'('"+USER_ID+"'),FOREIGN KEY('"+BOOK_ID+"') REFERENCES '"+TABLE_BOOKLIST+"'('"+BOOK_ID+"'))");
-        Toast.makeText(context, "Table "+TABLE_BORROWBOOK+" Create",Toast.LENGTH_LONG).show();
+        // sqLiteDatabase.execSQL("CREATE TABLE '"+ TABLE_NAME +"' ('"+ ITEM_ID +"' integer PRIMARY KEY AUTOINCREMENT,'"+ ITEM_TITLE +"' text NOT NULL,'"+ITEM_TYPE+"' text NOT NULL,'"+ITEM_PUBDATE+"' text,'"+ITEM_DISCRIPTION+"' text,'"+ITEM_IMAGE+"' blob);");
+        //Toast.makeText(context, "Table "+ TABLE_NAME +" Create",Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -74,7 +45,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         if(dbExist){
             //do nothing - database already exist
-            Toast.makeText(context, "Database Exits", Toast.LENGTH_LONG).show();
+            //Toast.makeText(context, "Database Exits", Toast.LENGTH_LONG).show();
         }else{
 
             //By calling this method and empty database will be created into the default system path
@@ -106,7 +77,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
             //database does't exist yet.
             System.err.println(e.getMessage());
-            Toast.makeText(context, "Database Not Fount", Toast.LENGTH_LONG).show();
+            //Toast.makeText(context, "Database Not Fount", Toast.LENGTH_LONG).show();
 
         }
 
@@ -116,7 +87,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         }
 
-        return checkDB != null ? true : false;
+        return checkDB != null;
     }
 
     private void copyDataBase() throws IOException{
@@ -141,7 +112,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         myOutput.flush();
         myOutput.close();
         myInput.close();
-        Toast.makeText(context, "Database import Successfully", Toast.LENGTH_LONG).show();
+        //Toast.makeText(context, "Database import Successfully", Toast.LENGTH_LONG).show();
     }
 
 }
