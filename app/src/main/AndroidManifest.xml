@@ -26,8 +26,14 @@
 
         </activity>
         <activity android:name=".DetailsActivity">
-
         </activity>
+
+     <!--  <receiver android:name="com.example.nayan.rssrecipe.NetworkChangeReceiver" >
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>  -->
+
     </application>
 
 </manifest>
