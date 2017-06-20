@@ -1,10 +1,6 @@
-package com.example.nayan.rssrecipe;
+package com.bdsob.recipes;
 
 import android.graphics.Bitmap;
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import java.io.Serializable;
 
 /**
  * Created by Nayan on 6/8/2017.

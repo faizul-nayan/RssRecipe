@@ -1,4 +1,4 @@
-package com.example.nayan.rssrecipe;
+package com.bdsob.recipes;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

@@ -1,4 +1,4 @@
-package com.example.nayan.rssrecipe;
+package com.bdsob.recipes;
 
 import org.junit.Test;
 

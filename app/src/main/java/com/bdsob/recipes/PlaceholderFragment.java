@@ -1,18 +1,16 @@
-package com.example.nayan.rssrecipe;
+package com.bdsob.recipes;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
-import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,33 +21,23 @@ import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import com.squareup.picasso.Picasso;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static android.content.ContentValues.TAG;
-import static android.support.design.R.attr.layoutManager;
 
 /**
- * Created by Nayan on 6/9/2017.
+ * Created by Faizul Haque Nayan on 6/9/2017.
  */
 
 public class PlaceholderFragment extends Fragment implements UserInterface {
@@ -61,16 +49,10 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
     ContactManager contactManager;
     private List<RssFeedModel> dataList;
 
-    private boolean flag = false;
-
 
     public PlaceholderFragment() {
     }
 
-    /**
-     * Returns a new instance of this fragment for the given section
-     * number.
-     */
     public static PlaceholderFragment newInstance(int sectionNumber) {
         PlaceholderFragment fragment = new PlaceholderFragment();
         Bundle args = new Bundle();
@@ -83,7 +65,7 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), RecyclerView.VERTICAL);
@@ -146,10 +128,8 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //flag = true;
         dataList = new ArrayList<>();
         view = rootView;
-
         return rootView;
     }
 
@@ -202,20 +182,19 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
         //boolean temp = new FetchFeedTask.execute().get();
     }
 
-
-    private void updateDataBase() {
-        /*boolean delete = contactManager.deleteData(AllITEM);
+    /*private void updateDataBase() {
+        boolean delete = contactManager.deleteData(AllITEM);
          if(delete)
             Log.d("DataBase Delete:", "Successful " );
         else
-            Log.d("DataBase Delete", "Unuccessful " );*/
+            Log.d("DataBase Delete", "Unuccessful " );
         boolean result = contactManager.addNewItem(mFeedModelList, AllITEM);
         if (result) {
             Toast.makeText(getActivity(), "Database Insert success", Toast.LENGTH_LONG).show();
             Log.d("DataBase insert:", "Successful ");
         } else
             Toast.makeText(getActivity(), "Database Insert FAILED", Toast.LENGTH_LONG).show();
-    }
+    }*/
 
     private boolean isNetworkConnected() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -225,17 +204,13 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
 
     public class FetchFeedTask extends AsyncTask<Void, Void, Boolean> {
 
-
         private String urlLink = "";
-
 
         @Override
         protected void onPreExecute() {
-
             if (swipeRefreshLayout == null)
                 swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
             swipeRefreshLayout.setRefreshing(true);
-           // flag = true;
 
             if (getArguments().getInt(ARG_SECTION_NUMBER) == 1) {
                 urlLink = urlLinkAll;
@@ -270,7 +245,6 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
                 InputStream inputStream = connection.getInputStream(); //url.openConnection().getInputStream();
                 mFeedModelList = parseFeed(inputStream);
                 inputStream.close();
-                //dataList = mFeedModelList;
                 return true;
             } catch (IOException e) {
                 Log.e(TAG, "Error", e);
@@ -284,18 +258,12 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
         protected void onPostExecute(Boolean success) {
 
             swipeRefreshLayout.setRefreshing(false);
-
             if (success) {
                 if (recyclerView != null && mFeedModelList.size() > 0)
                     recyclerView.setAdapter(new RssFeedListAdapter(mFeedModelList));
                 else
                     recyclerView.setAdapter(new RssFeedListAdapter(contactManager.getRecyclerViewData(AllITEM)));
-                //updateDataBase();
-
-            } else {
             }
-
-            //recyclerView.setAdapter(new RssFeedListAdapter(mFeedModelList));
         }
 
         public List<RssFeedModel> parseFeed(InputStream inputStream) throws XmlPullParserException,
@@ -344,7 +312,7 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
                     if (name.equalsIgnoreCase("media:content")) {
                         imageUrl = xmlPullParser.getAttributeValue(null, "url");
                         //realUrl = result;
-                        Log.d("Real Url is:", "+++++++++ " + imageUrl);
+                        //Log.d("Real Url is:", "+++++++++ " + imageUrl);
                         try {
                             InputStream in = new java.net.URL(imageUrl).openStream();
                             mIcon11 = BitmapFactory.decodeStream(in);
@@ -355,7 +323,7 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
                         }
                     }
 
-                    Log.d("MyXmlParser", "Parsing name ==> " + name);
+                    //Log.d("MyXmlParser", "Parsing name ==> " + name);
                     String result = "";
                     if (xmlPullParser.next() == XmlPullParser.TEXT) {
                         result = xmlPullParser.getText();
@@ -370,7 +338,6 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
                         description = result;
                     }
 
-
                     if (title != null && pubDate != null && description != null && mIcon11 != null) {
                         if (isItem) {
                             RssFeedModel item = new RssFeedModel(title, pubDate, description, mIcon11);
@@ -384,7 +351,6 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
                         isItem = false;
                     }
                 }
-
                 return items;
             } finally {
                 inputStream.close();
@@ -405,9 +371,8 @@ public class PlaceholderFragment extends Fragment implements UserInterface {
                     .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
             if (wifi.isAvailable() || mobile.isAvailable()) {
-                // Do something
                 startASycnc();
-                Log.d("Network Available ", "Flag No ++++++++Fragment");
+                //Log.d("Network Available ", "Flag No ++++++++Fragment");
             }
         }
     };

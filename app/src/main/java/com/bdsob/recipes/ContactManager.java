@@ -1,8 +1,4 @@
-package com.example.nayan.rssrecipe;
-
-/**
- * Created by home on 7/20/2016.
- */
+package com.bdsob.recipes;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -10,21 +6,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
-import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.nayan.rssrecipe.UserInterface.AllITEM;
-import static com.example.nayan.rssrecipe.UserInterface.ITEM_DISCRIPTION;
-import static com.example.nayan.rssrecipe.UserInterface.ITEM_IMAGE;
-import static com.example.nayan.rssrecipe.UserInterface.ITEM_PUBDATE;
-import static com.example.nayan.rssrecipe.UserInterface.ITEM_TITLE;
-import static com.example.nayan.rssrecipe.UserInterface.ITEM_TYPE;
-import static com.example.nayan.rssrecipe.UserInterface.TABLE_NAME;
+/**
+ * Created by Faizul Haque Nayan on 7/20/2016.
+ */
 
 public class ContactManager {
 
@@ -52,20 +42,20 @@ public class ContactManager {
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         int length = (rssFeedModel.size()) / 4;
-        Log.d("AddNewItem list size:", "+++++++++ " + String.valueOf(length));
+        //Log.d("AddNewItem list size:", "+++++++++ " + String.valueOf(length));
         byte[] byteArray = null;
         ContentValues contentValues = new ContentValues();
         for (int i = 0; i < length; i++) {
             rssFeedModel.get(i).getImageLink().compress(Bitmap.CompressFormat.PNG, 100, stream);
             byteArray = stream.toByteArray();
-            contentValues.put(ITEM_TITLE, rssFeedModel.get(i).getTitle());
-            contentValues.put(ITEM_TYPE, type);
-            contentValues.put(ITEM_PUBDATE, rssFeedModel.get(i).getPubDate());
-            contentValues.put(ITEM_DISCRIPTION, rssFeedModel.get(i).getDescription());
-            contentValues.put(ITEM_IMAGE, byteArray);
+            contentValues.put(UserInterface.ITEM_TITLE, rssFeedModel.get(i).getTitle());
+            contentValues.put(UserInterface.ITEM_TYPE, type);
+            contentValues.put(UserInterface.ITEM_PUBDATE, rssFeedModel.get(i).getPubDate());
+            contentValues.put(UserInterface.ITEM_DISCRIPTION, rssFeedModel.get(i).getDescription());
+            contentValues.put(UserInterface.ITEM_IMAGE, byteArray);
         }
         this.open();
-        long inserted = database.insert(TABLE_NAME, null, contentValues);
+        long inserted = database.insert(UserInterface.TABLE_NAME, null, contentValues);
         this.close();
 
         if (inserted > 0)
@@ -77,7 +67,7 @@ public class ContactManager {
 
     public boolean deleteData(String type) {
         this.open();
-        int query = database.delete(TABLE_NAME, ITEM_TYPE + "=?", new String[]{type});
+        int query = database.delete(UserInterface.TABLE_NAME, UserInterface.ITEM_TYPE + "=?", new String[]{type});
         this.close();
         return query > 0;
     }
@@ -87,21 +77,21 @@ public class ContactManager {
         Cursor cursor = null;
         this.open();
         //Cursor cursor = database.query(TABLE_NAME,null,""+ITEM_TYPE+"=?",new String[]{type},null,null,null);
-        if (type.equalsIgnoreCase(AllITEM)) {
-            cursor = database.query(TABLE_NAME, null, null, null, null, null, null);
+        if (type.equalsIgnoreCase(UserInterface.AllITEM)) {
+            cursor = database.query(UserInterface.TABLE_NAME, null, null, null, null, null, null);
         } else {
-            cursor = database.query(TABLE_NAME, null, "" + ITEM_TYPE + "=?", new String[]{type}, null, null, null);
+            cursor = database.query(UserInterface.TABLE_NAME, null, "" + UserInterface.ITEM_TYPE + "=?", new String[]{type}, null, null, null);
         }
 
 
-        Log.d("Cursor list size:", "+++++++++ " + cursor.getCount());
+        //Log.d("Cursor list size:", "+++++++++ " + cursor.getCount());
         if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
             for (int i = 0; i < cursor.getCount(); i++) {
-                String title = cursor.getString(cursor.getColumnIndex(ITEM_TITLE));
-                String pubDate = cursor.getString(cursor.getColumnIndex(ITEM_PUBDATE));
-                String discription = cursor.getString(cursor.getColumnIndex(ITEM_DISCRIPTION));
-                byte[] imageByte = cursor.getBlob(cursor.getColumnIndex(ITEM_IMAGE));
+                String title = cursor.getString(cursor.getColumnIndex(UserInterface.ITEM_TITLE));
+                String pubDate = cursor.getString(cursor.getColumnIndex(UserInterface.ITEM_PUBDATE));
+                String discription = cursor.getString(cursor.getColumnIndex(UserInterface.ITEM_DISCRIPTION));
+                byte[] imageByte = cursor.getBlob(cursor.getColumnIndex(UserInterface.ITEM_IMAGE));
                 Bitmap bitmap = BitmapFactory.decodeByteArray(imageByte, 0, imageByte.length);
                 RssFeedModel rssFeedModel = new RssFeedModel(title, pubDate, discription, bitmap);
                 dataList.add(rssFeedModel);

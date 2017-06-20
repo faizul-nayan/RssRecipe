@@ -1,39 +1,30 @@
-package com.example.nayan.rssrecipe;
+package com.bdsob.recipes;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.content.pm.ActivityInfo;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.TextUtils;
-import android.util.Log;
-import android.util.Xml;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.w3c.dom.Element;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
-import static android.content.ContentValues.TAG;
+/**
+ * Created by Faizul Haque Nayan on 7/20/2016.
+ */
 
 public class DetailsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_details);
 
         TextView titleTv = (TextView) findViewById(R.id.titleTv);
@@ -41,8 +32,18 @@ public class DetailsActivity extends AppCompatActivity {
         TextView descTv = (TextView) findViewById(R.id.detalisTv);
         ImageView imageView = (ImageView) findViewById(R.id.imageView);
 
+        MobileAds.initialize(this, "YOUR_ADMOB_APP_ID");
+
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
+
+
+        // adView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+
+        AdView mAdView = (AdView) findViewById(R.id.adView);
+        mAdView.setAdSize(AdSize.BANNER);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
 
         byte[] byteArray = bundle.getByteArray("image");
 
